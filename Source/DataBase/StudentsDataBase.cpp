@@ -1,34 +1,54 @@
 #include "../../Headers/StudentsDataBase.h"
 
-template<class value>
-void mydb::StudentsDataBase<value>::add(Student student) {
+
+void mydb::StudentsDataBase::add(Student student) {
     this->insideDataBase.push_back(student);
 }
 
-template<class value>
-void mydb::StudentsDataBase<value>::del(int index) {
-this->insideDataBase.erase(this->insideDataBase.begin() + index);
+
+void mydb::StudentsDataBase::del(int index) {
+this->insideDataBase.erase(index);
 }
 
-template<class value>
-void mydb::StudentsDataBase<value>::edit(int index, Student student) {
-    this->insideDataBase.insert(this->insideDataBase.begin() + index, student);
+
+void mydb::StudentsDataBase::edit(int index, Student student) {
+    this->insideDataBase.insert(index, student);
 }
 
-template<class value>
-Student mydb::StudentsDataBase<value>::get(int index) {
+
+Student mydb::StudentsDataBase::get(int index) {
     return this->insideDataBase[index];
 }
 
-template<class value>
-std::vector<Student> mydb::StudentsDataBase<value>::getAll(int index, bool filter) {
-    std::vector<Student> filteredOutput;
-    for (auto student: this->insideDataBase)
-        if (filter) filteredOutput.push_back(student);
-    return filteredOutput;
+
+myVector<Student> mydb::StudentsDataBase::getAll(bool filter) {
+    myVector<Student> temp;
+    for (int i = 0; i < insideDataBase.size(); ++i)
+        if (filter)  temp.push_back(insideDataBase[i]);
+    return temp;
 }
 
-template<class value>
-void mydb::StudentsDataBase<value>::sort(bool filter) {
+
+void mydb::StudentsDataBase::sort(bool filter) {
     // TODO
 }
+
+
+
+void mydb::StudentsDataBase::saveToFile() {
+    std::ofstream out(filename);
+    for (int i = 0; i < insideDataBase.size(); ++i)
+        insideDataBase[i].save(out);
+}
+
+
+void mydb::StudentsDataBase::loadToFile() {
+    std::ifstream in(filename);
+    std::string buff;
+    while (getline(in, buff))
+        add(Student::load(buff));
+}
+
+
+mydb::StudentsDataBase::StudentsDataBase() = default;
+

@@ -1,6 +1,6 @@
 #include <string>
 #include <regex>
-
+#pragma once
 enum FORMAT {
     ID_CARD,
     GROUP_NUMBER,

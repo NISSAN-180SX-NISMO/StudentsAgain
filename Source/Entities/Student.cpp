@@ -1,25 +1,77 @@
 #include "..\..\Headers\Student.h"
 
 
-const std::string &Student::getIdCard() const {
+const std::string Student::getIdCard() const {
     return idCard;
 }
 void Student::setIdCard(const std::string &idCard) {
     Student::idCard = idCard;
 }
-const std::string &Student::getGroupNumber() const {
+const std::string Student::getGroupNumber() const {
     return groupNumber;
 }
 void Student::setGroupNumber(const std::string &groupNumber) {
     Student::groupNumber = groupNumber;
 }
-const std::string &Student::getFullName() const {
+const std::string Student::getFullName() const {
     return fullName;
 }
 void Student::setFullName(const std::string &fullName) {
     Student::fullName = fullName;
 }
 
-void Student::setMark(int mark) {
-    this->marks.push_back(mark);
+void Student::addMark(int mark) {
+    averageMark = (averageMark == float(0))?
+            float(mark) :
+            (averageMark + float(mark))/2;
+}
+
+Student::Student(const std::string &idCard,
+                 const std::string &groupNumber,
+                 const std::string &fullName,
+                 float averageMark) :
+                 idCard(idCard),
+                 groupNumber(groupNumber),
+                 fullName(fullName),
+                 averageMark(averageMark){}
+
+Student::Student(const Student &other) :
+                fullName(other.fullName),
+                groupNumber(other.groupNumber),
+                idCard(other.idCard),
+                averageMark(other.averageMark){}
+
+Student::Student() {}
+
+const float Student::getAverageMark() const {
+    return this->averageMark;
+}
+
+Student::~Student() {
+    this->idCard.clear();
+    this->fullName.clear();
+    this->groupNumber.clear();
+}
+
+void Student::save(std::ofstream& out) {
+    out << this->fullName << "|"
+        << this->groupNumber << "|"
+        << this->idCard << "|"
+        << averageMark << "\n";
+}
+
+Student Student::load(std::string line) {
+    Student student;
+    myVector<std::string*> fields {&student.fullName, & student.groupNumber, &student.idCard};
+    std::string buff;
+    int i = 0;
+    for(auto ch : line){
+        if(ch == '|'){
+            *fields[i++] = buff;
+            buff.clear();
+        } else buff.push_back(ch);
+    }
+
+    student.averageMark = std::stof(buff.c_str());
+    return student;
 }

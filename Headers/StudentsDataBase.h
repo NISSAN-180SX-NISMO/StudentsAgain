@@ -1,20 +1,25 @@
 #ifndef STUDENTMANAGER_STUDENTSDATABASE_H
 #define STUDENTMANAGER_STUDENTSDATABASE_H
-
+#pragma once
+#include <fstream>
 #include "DataBaseAdapter.h"
 #include "Student.h"
 
 namespace mydb {
-    template<class value>
     class StudentsDataBase : public DataBaseAdapter<Student> {
     private:
-        std::vector<Student> insideDataBase;
+        std::string filename = "save.txt";
+        myVector<Student> insideDataBase;
     public:
+        StudentsDataBase();
         void add(Student student) override;
         void del(int index) override;
         void edit(int index, Student student) override;
         Student get(int index) override;
-        std::vector<Student> getAll(int index, bool filter) override;
+
+        void saveToFile();
+        void loadToFile();
+        myVector<Student> getAll(bool filter = true) override;
         void sort(bool filter) override;
     };
 }
