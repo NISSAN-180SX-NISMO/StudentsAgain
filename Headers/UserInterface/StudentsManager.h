@@ -16,7 +16,8 @@ public:
         NONE,
         ID_CARD,
         GROUP_NUMBER,
-        FULLNAME
+        FULLNAME,
+        AVERAGE_MARK
     };
     static void addStudent();
     static void deleteStudent();
@@ -26,7 +27,6 @@ public:
     static void findStudentByIdCard_Match();
     static void findStudentByIdCard_Between();
     static void printStudents(SORT = SORT::NONE);
-    static void loadStudentsFromFile();
     static void putMark();
     static void saveAndExit();
 };

@@ -36,9 +36,12 @@ void StudentsDataBaseController::editStudent(int index,
                                              const std::string &newGroupNumber,
                                              const std::string &newIdCard)
                                              {
-    if (!newFullName.empty()) studentsDataBase.get(index).setFullName(newFullName);
-    if (!newGroupNumber.empty()) studentsDataBase.get(index).setGroupNumber(newGroupNumber);
-    if (!newIdCard.empty()) studentsDataBase.get(index).setIdCard(newIdCard);
+    if (!newFullName.empty() && newFullName != "  ")
+        studentsDataBase.get(index).setFullName(newFullName);
+    if (!newGroupNumber.empty())
+        studentsDataBase.get(index).setGroupNumber(newGroupNumber);
+    if (!newIdCard.empty())
+        studentsDataBase.get(index).setIdCard(newIdCard);
 }
 
 myVector<Student> StudentsDataBaseController::getStudents(std::function<bool(Student)> filter) {

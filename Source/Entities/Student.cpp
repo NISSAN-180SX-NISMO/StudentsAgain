@@ -5,19 +5,19 @@ const std::string Student::getIdCard() const {
     return idCard;
 }
 void Student::setIdCard(const std::string &idCard) {
-    Student::idCard = idCard;
+    this->idCard = idCard;
 }
 const std::string Student::getGroupNumber() const {
     return groupNumber;
 }
 void Student::setGroupNumber(const std::string &groupNumber) {
-    Student::groupNumber = groupNumber;
+    this->groupNumber = groupNumber;
 }
 const std::string Student::getFullName() const {
     return fullName;
 }
 void Student::setFullName(const std::string &fullName) {
-    Student::fullName = fullName;
+    this->fullName = fullName;
 }
 
 void Student::addMark(int mark) {

@@ -14,7 +14,7 @@ namespace mydb {
         void add(Student student) override;
         void del(int index) override;
         void edit(int index, Student student) override;
-        Student get(int index) override;
+        Student& get(int index) override;
 
         std::pair<Student, int>* get(std::function<bool(Student)> filter = [](Student){return true;}) override;
         myVector<std::pair<Student, int>> getAll(std::function<bool(Student)> filter = [](Student){return true;}) override;

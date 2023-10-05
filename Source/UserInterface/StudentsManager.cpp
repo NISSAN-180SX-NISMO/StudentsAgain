@@ -29,7 +29,8 @@ void StudentsManager::editStudent() {
         std::cout << "Ошибка! Студент не найден!" << std::endl;
         return;
     }
-    Printer::print(student->first);
+
+    Printer::print(myVector<Student> { student->first});
     std::cout << "Введите новые значения для одного или нескольких полей:" << std::endl;
     std::string newSurname =       input("Введите фамилию студента: ", FORMAT::SURNAME),
             newName =          input("Введите имя студента: ", FORMAT::NAME),
@@ -55,37 +56,63 @@ void StudentsManager::findStudentByFullname() {
 }
 
 void StudentsManager::findStudentByGroupNumber() {
+    std::string groupNumber = input("Введите номер группы: ", FORMAT::NONE);
+    auto students = controller.getStudents([groupNumber](Student student) {
+        return student.getGroupNumber() == groupNumber;
+    });
+    if (students.size() == 0)
+        std::cout << "Студенты из этой группы не найдены" << std::endl;
+    else {
+        std::cout << "Найденные студенты:" << std::endl;
+        Printer::print(students);
+    }
     pause();
 }
 
 void StudentsManager::findStudentByIdCard_Match() {
+    std::string mark = input("Введите оценку (целое или десятичное число от 2 до 5): ", FORMAT::NONE);
+    if (mark.size() > 1) if (mark[1] == '.') mark[1] = ',';
+    auto students = controller.getStudents([mark](Student student) {
+        return student.getAverageMarkStr() == mark;
+    });
+    if (students.size() == 0)
+        std::cout << "Студенты с таким средним баллом не найдены" << std::endl;
+    else {
+        std::cout << "Найденные студенты:" << std::endl;
+        Printer::print(students);
+    }
     pause();
 }
 
 void StudentsManager::findStudentByIdCard_Between() {
+    std::string first_mark = input("Введите нижнюю границу (целое или десятичное число от 2 до 5): ", FORMAT::NONE);
+    std::string second_mark = input("Введите верхнюю границу (целое или десятичное число от 2 до 5): ", FORMAT::NONE);
+    if (first_mark.size() > 1) if (first_mark[1] == '.') first_mark[1] = ',';
+    if (second_mark.size() > 1) if (second_mark[1] == '.') second_mark[1] = ',';
+    auto students = controller.getStudents([first_mark, second_mark](Student student) {
+        return student.getAverageMarkStr() >= first_mark && student.getAverageMarkStr() <= second_mark;
+    });
+    if (students.size() == 0)
+        std::cout << "Студенты с таким средним баллом не найдены" << std::endl;
+    else {
+        std::cout << "Найденные студенты:" << std::endl;
+        Printer::print(students);
+    }
     pause();
 }
 
 void StudentsManager::printStudents(SORT flag) {
-    if (flag == SORT::NONE)
-        Printer::print(controller.getStudents());
-    else if (flag == SORT::FULLNAME) {
-        Printer::print(controller.sort([](Student first, Student second) {
-            return first.getFullName() > second.getFullName();
-            }));
+    switch (flag) {
+        case SORT::NONE:Printer::print(controller.getStudents()); break;
+        case SORT::FULLNAME:Printer::print(controller.sort([](Student first, Student second) {
+                return first.getFullName() > second.getFullName(); })); break;
+        case SORT::GROUP_NUMBER:Printer::print(controller.sort([](Student first, Student second) {
+                return first.getGroupNumber() > second.getGroupNumber(); })); break;
+        case SORT::ID_CARD:Printer::print(controller.sort([](Student first, Student second) {
+                return first.getIdCard() > second.getIdCard(); })); break;
+        case SORT::AVERAGE_MARK:Printer::print(controller.sort([](Student first, Student second) {
+                return first.getAverageMarkStr() > second.getAverageMarkStr(); })); break;
     }
-    else if(flag == SORT::GROUP_NUMBER)
-        Printer::print(controller.sort([](Student first, Student second) {
-        return first.getGroupNumber() > second.getGroupNumber();
-            }));
-    else if(flag == SORT::ID_CARD)
-        Printer::print(controller.sort([](Student first, Student second) {
-        return first.getIdCard() > second.getIdCard();
-            }));
-    pause();
-}
-
-void StudentsManager::loadStudentsFromFile() {
     pause();
 }
 

@@ -17,7 +17,7 @@ void mydb::StudentsDataBase::edit(int index, Student student) {
 }
 
 
-Student mydb::StudentsDataBase::get(int index) {
+Student& mydb::StudentsDataBase::get(int index) {
     return this->insideDataBase[index];
 }
 
