@@ -17,9 +17,9 @@ add_executable(StudentManager Source/main.cpp
         Headers/UserInterface/Printer.h
         Source/UserInterface/StudentsManager.cpp
         Headers/UserInterface/StudentsManager.h
-        Source/UserInterface/ConsoleMenu/ConsoleMenu.cpp
-        Headers/ConsoleMenu/ConsoleMenu.h
-        Headers/ConsoleMenu/ConsoleMenuFailures.h
+        Source/UserInterface/Menu/Menu.cpp
+        Headers/Menu/Menu.h
+        Headers/Menu/ConsoleMenuFailures.h
         Source/Controllers/StudentsDataBaseController.cpp
         Headers/Controllers/StudentsDataBaseController.h
 )
