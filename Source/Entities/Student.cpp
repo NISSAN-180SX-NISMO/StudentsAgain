@@ -72,8 +72,8 @@ void Student::save(std::ofstream& out) {
 
 Student Student::load(std::string line) {
     Student student;
-    std::string marksSum, marksCount;
-    myVector<std::string*> fields {&student.fullName, & student.groupNumber, &student.idCard, &marksSum, &marksCount};
+    std::string averageMark, marksSum, marksCount;
+    myVector<std::string*> fields {&student.fullName, & student.groupNumber, &student.idCard, &averageMark, &marksSum, &marksCount};
     std::string buff;
     int i = 0;
     for(auto ch : line){
@@ -82,10 +82,11 @@ Student Student::load(std::string line) {
             buff.clear();
         } else buff.push_back(ch);
     }
+    marksCount = buff;
 
+    student.averageMark = std::stof(averageMark.c_str());
     student.marksSum = std::stof(marksSum.c_str());
     student.marksCount = std::stof(marksCount.c_str());
-    student.averageMark = std::stof(buff.c_str());
     return student;
 }
 

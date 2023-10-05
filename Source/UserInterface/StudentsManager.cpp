@@ -148,7 +148,7 @@ void StudentsManager::putMark() {
         return;
     }
     std::string mark = input("Введите оценку (целое число от 2 до 5): ", FORMAT::MARK);
-
+    controller.putMark(student->second, std::atoi(mark.c_str()));
     pause();
 }
 

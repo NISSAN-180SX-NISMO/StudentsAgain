@@ -1,7 +1,3 @@
-//
-// Created by user on 03.10.2023.
-//
-
 #include "../../Headers/Controllers/StudentsDataBaseController.h"
 
 bool StudentsDataBaseController::addStudent(const std::string& fullName, const std::string& groupNumber,
@@ -11,6 +7,7 @@ bool StudentsDataBaseController::addStudent(const std::string& fullName, const s
         }) == nullptr) 
     {
         this->studentsDataBase.add(Student{ idCard, groupNumber, fullName, std::stof(averageMark.c_str()) });
+        this->studentsDataBase.saveToFile();
         return true;
     }
     else return false;
@@ -22,6 +19,7 @@ bool StudentsDataBaseController::deleteStudent(const std::string &idCard) {
     });
     if (student == nullptr) return false;
     else studentsDataBase.del(student[0].second);
+    this->studentsDataBase.saveToFile();
     return true;
 }
 
@@ -42,6 +40,8 @@ void StudentsDataBaseController::editStudent(int index,
         studentsDataBase.get(index).setGroupNumber(newGroupNumber);
     if (!newIdCard.empty())
         studentsDataBase.get(index).setIdCard(newIdCard);
+
+    this->studentsDataBase.saveToFile();
 }
 
 myVector<Student> StudentsDataBaseController::getStudents(std::function<bool(Student)> filter) {
@@ -62,6 +62,6 @@ void StudentsDataBaseController::saveToFile()
     this->studentsDataBase.saveToFile();
 }
 
-void StudentsDataBaseController::putMark(Student student, int mark) {
-    student.addMark(mark);
+void StudentsDataBaseController::putMark(int index, int mark) {
+    studentsDataBase.get(index).addMark(mark);
 }
