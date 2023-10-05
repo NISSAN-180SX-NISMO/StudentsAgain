@@ -21,9 +21,9 @@ void Student::setFullName(const std::string &fullName) {
 }
 
 void Student::addMark(int mark) {
-    averageMark = (averageMark == float(0))?
-            float(mark) :
-            (averageMark + float(mark))/2;
+    marksSum += mark;
+    marksCount++;
+    averageMark = marksSum / marksCount;
 }
 
 Student::Student(const std::string &idCard,
@@ -65,12 +65,15 @@ void Student::save(std::ofstream& out) {
     out << this->fullName << "|"
         << this->groupNumber << "|"
         << this->idCard << "|"
-        << averageMark << "\n";
+        << averageMark << "|"
+        << marksSum << "|"
+        << marksCount << "\n";
 }
 
 Student Student::load(std::string line) {
     Student student;
-    myVector<std::string*> fields {&student.fullName, & student.groupNumber, &student.idCard};
+    std::string marksSum, marksCount;
+    myVector<std::string*> fields {&student.fullName, & student.groupNumber, &student.idCard, &marksSum, &marksCount};
     std::string buff;
     int i = 0;
     for(auto ch : line){
@@ -80,6 +83,8 @@ Student Student::load(std::string line) {
         } else buff.push_back(ch);
     }
 
+    student.marksSum = std::stof(marksSum.c_str());
+    student.marksCount = std::stof(marksCount.c_str());
     student.averageMark = std::stof(buff.c_str());
     return student;
 }

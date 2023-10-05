@@ -22,4 +22,6 @@ add_executable(StudentManager Source/main.cpp
         Headers/Menu/ConsoleMenuFailures.h
         Source/Controllers/StudentsDataBaseController.cpp
         Headers/Controllers/StudentsDataBaseController.h
+        Source/Utils/Util.cpp
+        Headers/Utils/Util.h
 )

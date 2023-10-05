@@ -22,7 +22,7 @@ public:
     static void addStudent();
     static void deleteStudent();
     static void editStudent();
-    static void findStudentByFullname();
+    static void findStudentByFullname(float similarityCoef);
     static void findStudentByGroupNumber();
     static void findStudentByIdCard_Match();
     static void findStudentByIdCard_Between();

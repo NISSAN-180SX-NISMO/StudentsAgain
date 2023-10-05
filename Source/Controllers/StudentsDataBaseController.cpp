@@ -61,3 +61,7 @@ void StudentsDataBaseController::saveToFile()
 {
     this->studentsDataBase.saveToFile();
 }
+
+void StudentsDataBaseController::putMark(Student student, int mark) {
+    student.addMark(mark);
+}

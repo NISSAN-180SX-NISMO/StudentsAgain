@@ -9,6 +9,8 @@ private:
     std::string groupNumber;
     std::string fullName;
     float averageMark = 0;
+    int marksSum = 0;
+    int marksCount = 0;
 public:
     Student();
     Student(const std::string &idCard, const std::string &groupNumber, const std::string &fullName, float averageMark);

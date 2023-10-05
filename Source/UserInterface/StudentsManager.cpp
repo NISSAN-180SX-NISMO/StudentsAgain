@@ -1,4 +1,5 @@
 #include "../../Headers/UserInterface/StudentsManager.h"
+#include "../../Headers/Utils/Util.h"
 
 StudentsDataBaseController StudentsManager::controller = StudentsDataBaseController();
 
@@ -41,10 +42,10 @@ void StudentsManager::editStudent() {
     pause();
 }
 
-void StudentsManager::findStudentByFullname() {
+void StudentsManager::findStudentByFullname(float similarityCoef) {
     std::string fullName = input("Введите фамилию студента: ", FORMAT::NONE);
-    auto students = controller.getStudents([fullName](Student student) {
-        return student.getFullName() == fullName;
+    auto students = controller.getStudents([fullName, similarityCoef](Student student) {
+        return Util::getJaccardCoef(student.getFullName(),fullName) > similarityCoef;
         });
     if (students.size() == 0)
         std::cout << "Студенты с таким ФИО н найдены" << std::endl;
@@ -140,6 +141,14 @@ void StudentsManager::pause()
 }
 
 void StudentsManager::putMark() {
+    std::string idCard = input("Введите номер студенческого билета студента: ", FORMAT::ID_CARD);
+    auto student = controller.findStdent(idCard);
+    if (!student) {
+        std::cout << "Ошибка! Студент не найден!" << std::endl;
+        return;
+    }
+    std::string mark = input("Введите оценку (целое число от 2 до 5): ", FORMAT::MARK);
+
     pause();
 }
 
