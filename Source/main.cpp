@@ -1,29 +1,45 @@
-#include <iostream>
-#include <vector>
-#include "../Headers/myVector.h"
-#include "../Headers/Student.h"
-#include "../Headers/Printer.h"
-#include "../Headers/Serializer.h"
+#include "../Headers/UserInterface/StudentsManager.h"
+#include "../Headers/ConsoleMenu/ConsoleMenu.h"
+#include <Windows.h>
 
-
-
-#include "fstream"
-#include "../Headers/StudentsDataBase.h"
 
 int main() {
 
-    mydb::StudentsDataBase students;
+    setlocale(LC_ALL, "Russian");
+    SetConsoleOutputCP(1251);
+    SetConsoleCP(1251);
+
+    Menu mainMenu;
+    Menu* findStudentMenu = new Menu();
+    Menu* findStudentByIdCardMenu = new Menu();
+    Menu* printStudentsMenu = new Menu();
+
+    mainMenu.push_case("1 Добавить студента", KEY::ONE, StudentsManager::addStudent); 
+    mainMenu.push_case("2 Удалить студента из списка", KEY::TWO, StudentsManager::deleteStudent);
+    mainMenu.push_case("3 Изменить данные о студенте", KEY::THREE, StudentsManager::editStudent);
+    mainMenu.push_case("4 Поиск студента...",           KEY::FOUR,  findStudentMenu);
+    findStudentMenu->push_case("1 Искать по ФИО", KEY::ONE, StudentsManager::findStudentByFullname);
+    findStudentMenu->push_case("2 Искать по номеру группы", KEY::TWO, StudentsManager::findStudentByGroupNumber);
+    findStudentMenu->push_case("3 Искать по номеру студенческого...",  KEY::THREE,    findStudentByIdCardMenu);
+    findStudentByIdCardMenu->push_case("1 Поиск по заданному значению", KEY::ONE, StudentsManager::findStudentByIdCard_Match);
+    findStudentByIdCardMenu->push_case("2 Поиск Между двумя значениями", KEY::TWO, StudentsManager::findStudentByIdCard_Between);
+    mainMenu.push_case("5 Вывести список студентов...", KEY::FIVE, printStudentsMenu);
+    printStudentsMenu->push_case("1 Вывести без сортировки",            KEY::ONE,   [](){StudentsManager::printStudents(StudentsManager::SORT::NONE);});
+    printStudentsMenu->push_case("2 Сортировка по алфавиту",            KEY::TWO,   [](){StudentsManager::printStudents(StudentsManager::SORT::FULLNAME);});
+    printStudentsMenu->push_case("3 Сортировка по номеру группы",       KEY::THREE, [](){StudentsManager::printStudents(StudentsManager::SORT::GROUP_NUMBER);});
+    printStudentsMenu->push_case("4 Сортировка по номеру студенческого",KEY::FOUR,  [](){StudentsManager::printStudents(StudentsManager::SORT::ID_CARD);});
+    mainMenu.push_case("6 Загрузить данные из файла", KEY::SIX, StudentsManager::loadStudentsFromFile);
+    mainMenu.push_case("7 Поставить оценку", KEY::SEVEN, StudentsManager::putMark);
+    mainMenu.push_case("0 Сохранение и выход", KEY::ZERO, StudentsManager::saveAndExit);
 
 
-    students.add(Student{  "111","01","semen", 4 });
-    students.add(Student{  "222","02","ivan", 5 });
-    students.add(Student{  "333","03","anton", 3 });
+    mainMenu.start();
 
 
-    students.saveToFile();
-    mydb::StudentsDataBase test;
-    test.loadToFile();
-    Printer::print(test.getAll());
 
+
+
+
+    system("pause");
 
 }

@@ -1,4 +1,4 @@
-#include "..\..\Headers\Student.h"
+#include "../../Headers/Entities/Student.h"
 
 
 const std::string Student::getIdCard() const {
@@ -40,6 +40,14 @@ Student::Student(const Student &other) :
                 groupNumber(other.groupNumber),
                 idCard(other.idCard),
                 averageMark(other.averageMark){}
+
+void Student::operator=(const Student& other)
+{
+    this->averageMark = other.averageMark;
+    this->fullName = other.fullName;
+    this->groupNumber = other.groupNumber;
+    this->idCard = other.idCard;
+}
 
 Student::Student() {}
 

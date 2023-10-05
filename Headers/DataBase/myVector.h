@@ -1,11 +1,4 @@
-//
-// Created by user on 30.09.2023.
-//
-
-#ifndef STUDENTMANAGER_MYVECTOR_H
-#define STUDENTMANAGER_MYVECTOR_H
-
-
+#pragma once
 #include <initializer_list>
 
 template<class value>
@@ -16,11 +9,13 @@ private:
 public:
     myVector();
     myVector(std::initializer_list<value> initList);
+    myVector(const myVector& other);
     void push_back(value);
     void erase(const int index);
     void insert(const int index, value);
     int size();
     value& operator[](int index);
+    void operator=(myVector<value>);
 
 };
 
@@ -37,6 +32,15 @@ myVector<value>::myVector(std::initializer_list<value> initList) {
     for (const value& val : initList) {
         dataArray[i++] = val;
     }
+}
+
+template<class value>
+inline myVector<value>::myVector(const myVector& other)
+{
+    this->currentSize = other.currentSize;
+    this->dataArray = new value[currentSize];
+    for (int i = 0; i < currentSize; i++)
+        this->dataArray[i] = other.dataArray[i];
 }
 
 template<class value>
@@ -88,5 +92,11 @@ value &myVector<value>::operator[](int index) {
     return dataArray[index];
 }
 
-
-#endif //STUDENTMANAGER_MYVECTOR_H
+template<class value>
+inline void myVector<value>::operator=(myVector<value> other)
+{
+    this->currentSize = other.currentSize;
+    this->dataArray = new value[currentSize];
+    for (int i = 0; i < currentSize; i++)
+        this->dataArray[i] = other.dataArray[i];
+}

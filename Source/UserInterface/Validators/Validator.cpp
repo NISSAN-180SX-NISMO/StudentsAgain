@@ -1,4 +1,4 @@
-#include "../../../Headers/Validator.h"
+#include "../../../Headers/UserInterface/Validator.h"
 
 Validator::Validator(std::string source) {
     this->value = source;

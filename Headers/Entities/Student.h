@@ -1,9 +1,7 @@
-#ifndef STUDENTMANAGER_STUDENT_H
-#define STUDENTMANAGER_STUDENT_H
 #pragma once
 #include <string>
-#include "myVector.h"
 #include <fstream>
+#include "../DataBase/myVector.h"
 
 class Student {
 private:
@@ -15,6 +13,7 @@ public:
     Student();
     Student(const std::string &idCard, const std::string &groupNumber, const std::string &fullName, float averageMark);
     Student(const Student& other);
+    void operator=(const Student& other);
     ~Student();
     const std::string getIdCard() const;
     void setIdCard(const std::string &idCard);
@@ -28,5 +27,3 @@ public:
     void save(std::ofstream& out);
     static Student load(std::string line);
 };
-
-#endif //STUDENTMANAGER_STUDENT_H

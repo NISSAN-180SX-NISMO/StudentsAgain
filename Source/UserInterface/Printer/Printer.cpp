@@ -1,8 +1,4 @@
-//
-// Created by user on 02.10.2023.
-//
-
-#include "../../../Headers/Printer.h"
+#include "../../../Headers/UserInterface/Printer.h"
 
 void Printer::print(Student student, std::ostream *out) {
     *out << student.getFullName() << std::endl;
