@@ -83,3 +83,10 @@ Student Student::load(std::string line) {
     student.averageMark = std::stof(buff.c_str());
     return student;
 }
+
+const std::string Student::getAverageMarkStr() const {
+    std::string markStr = std::to_string(this->averageMark);
+    if(markStr[3] > '4') markStr[2]++;
+    markStr.erase(3, markStr.size());
+    return markStr;
+}

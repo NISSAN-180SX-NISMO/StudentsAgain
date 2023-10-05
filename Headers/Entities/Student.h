@@ -22,6 +22,7 @@ public:
     const std::string getFullName() const;
     void setFullName(const std::string &fullName);
     const float getAverageMark() const;
+    const std::string getAverageMarkStr() const;
     void addMark(int mark);
 
     void save(std::ofstream& out);
