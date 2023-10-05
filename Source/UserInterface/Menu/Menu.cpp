@@ -1,4 +1,4 @@
-#include "../../../Headers/ConsoleMenu/Menu.h"
+#include "../../../Headers/Menu/Menu.h"
 
 Menu::FunctionCase::FunctionCase(const string title, KEY key, function<void()> ExeFunc)
 {
