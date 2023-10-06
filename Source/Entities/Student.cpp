@@ -23,27 +23,35 @@ void Student::setFullName(const std::string &fullName) {
 void Student::addMark(int mark) {
     marksSum += mark;
     marksCount++;
-    averageMark = marksSum / marksCount;
+    averageMark = float(marksSum) / marksCount;
 }
 
 Student::Student(const std::string &idCard,
                  const std::string &groupNumber,
                  const std::string &fullName,
-                 float averageMark) :
+                 float averageMark, float marksSum,
+                 int marksCount) :
                  idCard(idCard),
                  groupNumber(groupNumber),
                  fullName(fullName),
-                 averageMark(averageMark){}
+                 averageMark(averageMark),
+                 marksSum(marksSum),
+                 marksCount(marksCount){}
 
-Student::Student(const Student &other) :
-                fullName(other.fullName),
-                groupNumber(other.groupNumber),
-                idCard(other.idCard),
-                averageMark(other.averageMark){}
+Student::Student(const Student &other) {
+    this->averageMark = other.averageMark;
+    this->marksCount = other.marksCount;
+    this->marksSum = other.marksSum;
+    this->fullName = other.fullName;
+    this->groupNumber = other.groupNumber;
+    this->idCard = other.idCard;
+}
 
 void Student::operator=(const Student& other)
 {
     this->averageMark = other.averageMark;
+    this->marksCount = other.marksCount;
+    this->marksSum = other.marksSum;
     this->fullName = other.fullName;
     this->groupNumber = other.groupNumber;
     this->idCard = other.idCard;
@@ -65,7 +73,7 @@ void Student::save(std::ofstream& out) {
     out << this->fullName << "|"
         << this->groupNumber << "|"
         << this->idCard << "|"
-        << averageMark << "|"
+        << getAverageMarkStr() << "|"
         << marksSum << "|"
         << marksCount << "\n";
 }
@@ -86,7 +94,7 @@ Student Student::load(std::string line) {
 
     student.averageMark = std::stof(averageMark.c_str());
     student.marksSum = std::stof(marksSum.c_str());
-    student.marksCount = std::stof(marksCount.c_str());
+    student.marksCount = std::atoi(marksCount.c_str());
     return student;
 }
 

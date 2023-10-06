@@ -43,12 +43,12 @@ void StudentsManager::editStudent() {
 }
 
 void StudentsManager::findStudentByFullname(float similarityCoef) {
-    std::string fullName = input("Введите фамилию студента: ", FORMAT::NONE);
+    std::string fullName = input("Введите ФИО студента: ", FORMAT::NONE);
     auto students = controller.getStudents([fullName, similarityCoef](Student student) {
-        return Util::getJaccardCoef(student.getFullName(),fullName) > similarityCoef;
+        return Util::getJaccardCoef(student.getFullName(),fullName) >= similarityCoef;
         });
     if (students.size() == 0)
-        std::cout << "Студенты с таким ФИО н найдены" << std::endl;
+        std::cout << "Студенты с таким ФИО не найдены" << std::endl;
     else {
         std::cout << "Найденные студенты:" << std::endl;
         Printer::print(students);
@@ -57,7 +57,7 @@ void StudentsManager::findStudentByFullname(float similarityCoef) {
 }
 
 void StudentsManager::findStudentByGroupNumber() {
-    std::string groupNumber = input("Введите номер группы: ", FORMAT::NONE);
+    std::string groupNumber = input("Введите номер группы: ", FORMAT::GROUP_NUMBER);
     auto students = controller.getStudents([groupNumber](Student student) {
         return student.getGroupNumber() == groupNumber;
     });
@@ -71,10 +71,10 @@ void StudentsManager::findStudentByGroupNumber() {
 }
 
 void StudentsManager::findStudentByIdCard_Match() {
-    std::string mark = input("Введите оценку (целое или десятичное число от 2 до 5): ", FORMAT::NONE);
+    std::string mark = input("Введите средний балл (целое или десятичное число от 2 до 5): ", FORMAT::AVERAGE_MARK);
     if (mark.size() > 1) if (mark[1] == '.') mark[1] = ',';
     auto students = controller.getStudents([mark](Student student) {
-        return student.getAverageMarkStr() == mark;
+        return student.getAverageMark() == std::stof(mark.c_str());
     });
     if (students.size() == 0)
         std::cout << "Студенты с таким средним баллом не найдены" << std::endl;
@@ -86,8 +86,8 @@ void StudentsManager::findStudentByIdCard_Match() {
 }
 
 void StudentsManager::findStudentByIdCard_Between() {
-    std::string first_mark = input("Введите нижнюю границу (целое или десятичное число от 2 до 5): ", FORMAT::NONE);
-    std::string second_mark = input("Введите верхнюю границу (целое или десятичное число от 2 до 5): ", FORMAT::NONE);
+    std::string first_mark = input("Введите нижнюю границу (целое или десятичное число от 2 до 5): ", FORMAT::AVERAGE_MARK);
+    std::string second_mark = input("Введите верхнюю границу (целое или десятичное число от 2 до 5): ", FORMAT::AVERAGE_MARK);
     if (first_mark.size() > 1) if (first_mark[1] == '.') first_mark[1] = ',';
     if (second_mark.size() > 1) if (second_mark[1] == '.') second_mark[1] = ',';
     auto students = controller.getStudents([first_mark, second_mark](Student student) {

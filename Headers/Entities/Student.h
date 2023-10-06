@@ -9,11 +9,11 @@ private:
     std::string groupNumber;
     std::string fullName;
     float averageMark = 0;
-    int marksSum = 0;
+    float marksSum = 0;
     int marksCount = 0;
 public:
     Student();
-    Student(const std::string &idCard, const std::string &groupNumber, const std::string &fullName, float averageMark);
+    Student(const std::string &idCard, const std::string &groupNumber, const std::string &fullName, float averageMark, float marksSum, int marksCount);
     Student(const Student& other);
     void operator=(const Student& other);
     ~Student();

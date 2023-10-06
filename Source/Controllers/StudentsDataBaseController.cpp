@@ -6,7 +6,7 @@ bool StudentsDataBaseController::addStudent(const std::string& fullName, const s
         return student.getIdCard() == idCard;
         }) == nullptr) 
     {
-        this->studentsDataBase.add(Student{ idCard, groupNumber, fullName, std::stof(averageMark.c_str()) });
+        this->studentsDataBase.add(Student{ idCard, groupNumber, fullName, std::stof(averageMark.c_str()),std::stof(averageMark.c_str()), 1 });
         this->studentsDataBase.saveToFile();
         return true;
     }
@@ -64,4 +64,5 @@ void StudentsDataBaseController::saveToFile()
 
 void StudentsDataBaseController::putMark(int index, int mark) {
     studentsDataBase.get(index).addMark(mark);
+    this->studentsDataBase.saveToFile();
 }
