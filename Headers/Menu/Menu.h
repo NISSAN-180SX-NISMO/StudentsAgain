@@ -45,4 +45,3 @@ public:
 	void push_case(string title, KEY key, Menu* SubMenu);
 	void start() { start(this); }
 };
-// sdbvskjdbvsjvdb
