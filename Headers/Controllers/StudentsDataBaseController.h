@@ -4,7 +4,7 @@
 
 class StudentsDataBaseController {
 private:
-    mydb::StudentsDataBase studentsDataBase;
+    mydb::DataBaseAdapter<Student>* studentsDataBase = new mydb::StudentsDataBase;
 public:
     StudentsDataBaseController() = default;
     bool addStudent(const std::string& fullName, const std::string& groupName, const std::string& idCard, const std::string& averageMark);
