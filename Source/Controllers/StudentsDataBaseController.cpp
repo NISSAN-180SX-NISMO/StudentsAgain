@@ -1,5 +1,7 @@
 #include "../../Headers/Controllers/StudentsDataBaseController.h"
 
+mydb::DataBaseAdapter<Student>* StudentsDataBaseController::studentsDataBase = new mydb::StudentsDataBase;
+
 bool StudentsDataBaseController::addStudent(const std::string& fullName, const std::string& groupNumber,
                                             const std::string& idCard,  const std::string& averageMark) {
     if (studentsDataBase->get([idCard](const Student& student) {

@@ -1,0 +1,1012 @@
+../CMakeLists.txt
+cmake_minimum_required(VERSION 3.26)
+project(StudentManager)
+
+set(CMAKE_CXX_STANDARD 17)
+
+add_executable(StudentManager Source/main.cpp
+        Headers/Entities/Student.h
+        Source/Entities/Student.cpp
+        Headers/DataBase/DataBaseAdapter.h
+        Source/DataBase/StudentsDataBase.cpp
+        Headers/DataBase/StudentsDataBase.h
+        Source/UserInterface/Validators/Validator.cpp
+        Headers/UserInterface/Validator.h
+        Source/DataBase/DataStruct/myVector.cpp
+        Headers/DataBase/myVector.h
+        Source/UserInterface/Printer/Printer.cpp
+        Headers/UserInterface/Printer.h
+        Source/UserInterface/StudentsManager.cpp
+        Headers/UserInterface/StudentsManager.h
+        Source/UserInterface/Menu/Menu.cpp
+        Headers/Menu/Menu.h
+        Headers/Menu/ConsoleMenuFailures.h
+        Source/Controllers/StudentsDataBaseController.cpp
+        Headers/Controllers/StudentsDataBaseController.h
+        Source/Utils/Util.cpp
+        Headers/Utils/Util.h
+)
+
+../Headers\Controllers\StudentsDataBaseController.h
+#pragma once
+#include "../DataBase/StudentsDataBase.h"
+#include "../Entities/Student.h"
+
+class StudentsDataBaseController {
+private:
+    mydb::DataBaseAdapter<Student>* studentsDataBase = new mydb::StudentsDataBase;
+public:
+    StudentsDataBaseController() = default;
+    bool addStudent(const std::string& fullName, const std::string& groupName, const std::string& idCard, const std::string& averageMark);
+    bool deleteStudent(const std::string& idCard);
+    std::pair<Student, int>* findStdent(std::string idCard);
+    void editStudent(int index, const std::string& newFullName, const std::string& newGroupName, const std::string& newIdCard);
+    void putMark(int index, int mark);
+    myVector<Student> getStudents(std::function<bool(Student)> filter = [](Student){return true;});
+    myVector<Student> sort(std::function<bool(Student, Student)> filter = [](Student, Student){return true;});
+
+    void saveToFile();
+};
+../Headers\DataBase\DataBaseAdapter.h
+#pragma once
+#include <functional>
+#include "myVector.h"
+#include "../Entities/Student.h"
+
+namespace mydb {
+    template<class something>
+    class DataBaseAdapter {
+    public:
+        virtual void add(something) = 0;
+        virtual void del(int index) = 0;
+        virtual void edit(int index, something) = 0;
+        virtual something& get(int index) = 0;
+        virtual std::pair<something, int>* get(std::function<bool(Student)>) = 0;
+        virtual myVector<std::pair<something, int>> getAll(std::function<bool(Student)>) = 0;
+        virtual myVector<something> getAllRaw() = 0;
+        virtual void saveToFile() = 0;
+        virtual void loadFromFile() = 0;
+        
+    };
+}
+../Headers\DataBase\myVector.h
+#pragma once
+#include <initializer_list>
+
+template<class value>
+class myVector {
+private:
+    value* dataArray = nullptr;
+    int currentSize = 0;
+public:
+    myVector();
+    myVector(std::initializer_list<value> initList);
+    myVector(const myVector& other);
+    void push_back(value);
+    void erase(const int index);
+    void insert(const int index, value);
+    int size();
+    value& operator[](int index);
+    void operator=(myVector<value>);
+
+};
+
+template<class value>
+myVector<value>::myVector() {
+
+}
+
+template<class value>
+myVector<value>::myVector(std::initializer_list<value> initList) {
+    currentSize = initList.size();
+    dataArray = new value[currentSize];
+    int i = 0;
+    for (const value& val : initList) {
+        dataArray[i++] = val;
+    }
+}
+
+template<class value>
+inline myVector<value>::myVector(const myVector& other)
+{
+    this->currentSize = other.currentSize;
+    this->dataArray = new value[currentSize];
+    for (int i = 0; i < currentSize; i++)
+        this->dataArray[i] = other.dataArray[i];
+}
+
+template<class value>
+void myVector<value>::push_back(value newValue) {
+    value* temp = new value[currentSize + 1];
+    for (int i = 0; i < currentSize; ++i)
+        temp[i] = dataArray[i];
+    temp[currentSize] = newValue;
+    delete[] dataArray;
+    dataArray = temp;
+    currentSize++;
+}
+
+template<class value>
+void myVector<value>::erase(const int index) {
+    if (index < 0 || index >= currentSize) return;
+    value* temp = new value[currentSize - 1];
+    for (int i = 0, j = 0; i < currentSize; ++i, ++j) {
+        if (i == index) --j;
+        else temp[j] = dataArray[i];
+    }
+    delete[] dataArray;
+    dataArray = temp;
+    currentSize--;
+}
+
+template<class value>
+void myVector<value>::insert(const int index, value newValue) {
+    if (index < 0 || index >= currentSize) return;
+    value* temp = new value[currentSize + 1];
+    for (int i = 0, j = 0; i < currentSize; ++i, ++j) {
+        if (i == index) {
+            temp[i] = newValue;
+            --j;
+        } else temp[i] = dataArray[j];
+    }
+    delete[] dataArray;
+    dataArray = temp;
+    currentSize++;
+}
+
+template<class value>
+int myVector<value>::size() {
+    return currentSize;
+}
+
+template<class value>
+value &myVector<value>::operator[](int index) {
+    return dataArray[index];
+}
+
+template<class value>
+inline void myVector<value>::operator=(myVector<value> other)
+{
+    this->currentSize = other.currentSize;
+    this->dataArray = new value[currentSize];
+    for (int i = 0; i < currentSize; i++)
+        this->dataArray[i] = other.dataArray[i];
+}
+
+../Headers\DataBase\StudentsDataBase.h
+#pragma once
+#include <fstream>
+#include "DataBaseAdapter.h"
+#include "../Entities/Student.h"
+
+namespace mydb {
+
+    class StudentsDataBase : public DataBaseAdapter<Student> {
+    private:
+        std::string filename = "save.txt";
+        myVector<Student> insideDataBase;
+    public:
+        StudentsDataBase();
+        void add(Student student) override;
+        void del(int index) override;
+        void edit(int index, Student student) override;
+        Student& get(int index) override;
+
+        std::pair<Student, int>* get(std::function<bool(Student)> filter = [](Student){return true;}) override;
+        myVector<std::pair<Student, int>> getAll(std::function<bool(Student)> filter = [](Student){return true;}) override;
+        myVector<Student> getAllRaw() override;
+        void saveToFile() override;
+        void loadFromFile() override;
+        static myVector<Student> sort(myVector<Student> students, std::function<bool(Student, Student)> filter = [](Student, Student){return true;});
+    };
+}
+../Headers\Entities\Student.h
+#pragma once
+#include <string>
+#include <fstream>
+#include "../DataBase/myVector.h"
+
+class Student {
+private:
+    std::string idCard;     // primary key
+    std::string groupNumber;
+    std::string fullName;
+    float averageMark = 0;
+    float marksSum = 0;
+    int marksCount = 0;
+public:
+    Student();
+    Student(const std::string &idCard, const std::string &groupNumber, const std::string &fullName, float averageMark, float marksSum, int marksCount);
+    Student(const Student& other);
+    void operator=(const Student& other);
+    ~Student();
+    const std::string getIdCard() const;
+    void setIdCard(const std::string &idCard);
+    const std::string getGroupNumber() const;
+    void setGroupNumber(const std::string &groupNumber);
+    const std::string getFullName() const;
+    void setFullName(const std::string &fullName);
+    const float getAverageMark() const;
+    const std::string getAverageMarkStr() const;
+    void addMark(int mark);
+
+    void save(std::ofstream& out);
+    static Student load(std::string line);
+};
+
+../Headers\Menu\ConsoleMenuFailures.h
+#pragma once
+#include <stdexcept>
+#include <string>
+
+class MenuFailure : public std::exception {
+public:
+	virtual ~MenuFailure() = default;
+	virtual const std::string getmore() = 0;
+};
+
+class CaseIsMissing : public MenuFailure {
+private:
+	std::string more;
+public:
+	CaseIsMissing(const char* error) : more(error) {}
+	virtual const std::string getmore() override { return this->more; }
+};
+
+class SubMenuIsEmpty : public MenuFailure {
+private:
+	std::string more;
+public:
+	SubMenuIsEmpty(const char* error) : more(error) {}
+	virtual const std::string getmore() override { return this->more; }
+};
+
+class DuplicateKey : public MenuFailure {
+private:
+	std::string more;
+public:
+	DuplicateKey(const char* error, char code) : more(error + ' ' + std::to_string(code)) {}
+	virtual const std::string getmore() override { return this->more; }
+};
+../Headers\Menu\Menu.h
+#pragma once
+#include <iostream>
+#include <conio.h>
+#include <string>
+#include <functional>
+#include <vector>
+
+#include "ConsoleMenuFailures.h"
+
+using std::string;
+using std::function;
+
+enum class KEY
+{
+	Esc = 27, ZERO = 48, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE
+};
+
+class Menu;
+
+struct Case {
+	~Case() = default;
+	string title;
+	char code;
+	virtual Menu* Do() = 0;
+};
+
+class Menu {
+private:
+	struct FunctionCase : public Case {
+		function<void()> ExeFunc;
+		FunctionCase(const string title, KEY key, function<void()> ExeFunc = nullptr);
+		virtual Menu* Do() override;
+	};
+
+	struct SubMenuCase : public Case {
+		Menu* SubMenu;
+		SubMenuCase(const string title, KEY key, Menu* SubMenu = nullptr);
+		virtual Menu* Do() override;
+	};
+	Case* menu[256];
+	void start(Menu* SubMenu);
+public:
+	Menu();
+	void push_case(string title, KEY key, function<void()> ExeFunc);
+	void push_case(string title, KEY key, Menu* SubMenu);
+	void start() { start(this); }
+};
+
+../Headers\UserInterface\Printer.h
+#pragma once
+#include <iostream>
+#include "../Entities/Student.h"
+
+class Printer {
+private:
+    static std::string getLine(int size, char type);
+public:
+    static void printTitle(std::ostream* out = &std::cout);
+    static void print (Student, std::ostream* out = &std::cout);
+    static void print (myVector<Student>, std::ostream* out = &std::cout);
+};
+
+../Headers\UserInterface\StudentsManager.h
+#pragma once
+#include <iostream>
+#include <conio.h>
+#include "Printer.h"
+#include "Validator.h"
+#include "../Controllers/StudentsDataBaseController.h"
+
+
+class StudentsManager {
+private:
+    static StudentsDataBaseController controller;
+    static std::string input(const std::string& title, FORMAT);
+    static void pause();
+public:
+    enum class SORT {
+        NONE,
+        ID_CARD,
+        GROUP_NUMBER,
+        FULLNAME,
+        AVERAGE_MARK
+    };
+    static void addStudent();
+    static void deleteStudent();
+    static void editStudent();
+    static void findStudentByFullname(float similarityCoef);
+    static void findStudentByGroupNumber();
+    static void findStudentByIdCard_Match();
+    static void findStudentByIdCard_Between();
+    static void printStudents(SORT = SORT::NONE);
+    static void putMark();
+    static void saveAndExit();
+};
+
+../Headers\UserInterface\Validator.h
+#pragma once
+#include <string>
+#include <regex>
+enum FORMAT {
+    NONE,
+    SURNAME,
+    NAME,
+    PATRONYMIC,
+    GROUP_NUMBER,
+    ID_CARD,
+    AVERAGE_MARK,
+    MARK
+};
+
+class Validator {
+private:
+    std::string value;
+    std::vector<std::string> formats {
+            "[\\d\\D]*", // none
+            "[-][-]+(-[-][-]+)?", // surname
+            "[-][-]+", // name
+            "[-][-]+", // patronymic
+            "[0-9]{4}",     // groupNumber
+            "20(([0-1][0-9])|(2[0-3]))/([0-9]{4})", // idCard
+            "0|(([2-4](,[0-9])?)|(5)(,0)?)", // averageMark
+            "[2-5]", // mark
+    };
+public:
+    explicit Validator(std::string source);
+    bool operator()(FORMAT);
+};
+
+
+
+../Headers\Utils\Util.h
+#pragma once
+#include <string>
+#include <set>
+
+namespace Util {
+    float getJaccardCoef(std::string first, std::string second);
+};
+
+../Source\main.cpp
+#include "../Headers/UserInterface/StudentsManager.h"
+#include "../Headers/Menu/Menu.h"
+#include <Windows.h>
+
+int main() {
+
+    setlocale(LC_ALL, "Russian");
+    SetConsoleOutputCP(1251);
+    SetConsoleCP(1251);
+
+    Menu mainMenu;
+    Menu* findStudentMenu = new Menu();
+    Menu* findStudentMenuByName = new Menu();
+    Menu* findStudentByIdCardMenu = new Menu();
+    Menu* printStudentsMenu = new Menu();
+
+    mainMenu.push_case("[1] =  ",          KEY::ONE,  StudentsManager::addStudent);
+    mainMenu.push_case("[2] =    ", KEY::TWO,  StudentsManager::deleteStudent);
+    mainMenu.push_case("[3] =    ", KEY::THREE,StudentsManager::editStudent);
+    mainMenu.push_case("[4] =  ...",          KEY::FOUR,findStudentMenu);
+    findStudentMenu->push_case("[1] =   ", KEY::ONE, findStudentMenuByName);
+    findStudentMenuByName->push_case("[1] =    ", KEY::ONE, [](){StudentsManager::findStudentByFullname(1);});
+    findStudentMenuByName->push_case("[2] =    ", KEY::TWO, [](){StudentsManager::findStudentByFullname(0.57);});
+    findStudentMenu->push_case("[2] =    ", KEY::TWO, StudentsManager::findStudentByGroupNumber);
+    findStudentMenu->push_case("[3] =    ...",  KEY::THREE,    findStudentByIdCardMenu);
+    findStudentByIdCardMenu->push_case("[1] =    ", KEY::ONE, StudentsManager::findStudentByIdCard_Match);
+    findStudentByIdCardMenu->push_case("[2] =    ", KEY::TWO, StudentsManager::findStudentByIdCard_Between);
+    mainMenu.push_case("[5] =   ...", KEY::FIVE, printStudentsMenu);
+    printStudentsMenu->push_case("[1] =   ",            KEY::ONE,   [](){StudentsManager::printStudents(StudentsManager::SORT::NONE);});
+    printStudentsMenu->push_case("[2] =   ",            KEY::TWO,   [](){StudentsManager::printStudents(StudentsManager::SORT::FULLNAME);});
+    printStudentsMenu->push_case("[3] =    ",       KEY::THREE, [](){StudentsManager::printStudents(StudentsManager::SORT::GROUP_NUMBER);});
+    printStudentsMenu->push_case("[4] =    ",KEY::FOUR,  [](){StudentsManager::printStudents(StudentsManager::SORT::ID_CARD);});
+    printStudentsMenu->push_case("[5] =    ",      KEY::FIVE,  [](){StudentsManager::printStudents(StudentsManager::SORT::AVERAGE_MARK);});
+    mainMenu.push_case("[6] =  ", KEY::SIX, StudentsManager::putMark);
+    mainMenu.push_case("[0] =   ", KEY::ZERO, StudentsManager::saveAndExit);
+
+    mainMenu.start();
+
+    system("pause");
+
+}
+../Source\Controllers\StudentsDataBaseController.cpp
+#include "../../Headers/Controllers/StudentsDataBaseController.h"
+
+bool StudentsDataBaseController::addStudent(const std::string& fullName, const std::string& groupNumber,
+                                            const std::string& idCard,  const std::string& averageMark) {
+    if (studentsDataBase->get([idCard](const Student& student) {
+        return student.getIdCard() == idCard;
+        }) == nullptr) 
+    {
+        this->studentsDataBase->add(Student{ idCard, groupNumber, fullName, std::stof(averageMark.c_str()),std::stof(averageMark.c_str()), 1 });
+        this->studentsDataBase->saveToFile();
+        return true;
+    }
+    else return false;
+}
+
+bool StudentsDataBaseController::deleteStudent(const std::string &idCard) {
+    auto student = studentsDataBase->get([idCard](Student student){
+        return student.getIdCard() == idCard;
+    });
+    if (student == nullptr) return false;
+    else studentsDataBase->del(student[0].second);
+    this->studentsDataBase->saveToFile();
+    return true;
+}
+
+std::pair<Student, int> *StudentsDataBaseController::findStdent(std::string idCard) {
+    return studentsDataBase->get([idCard](Student student){
+        return student.getIdCard() == idCard;
+    });;
+}
+
+void StudentsDataBaseController::editStudent(int index,
+                                             const std::string &newFullName,
+                                             const std::string &newGroupNumber,
+                                             const std::string &newIdCard)
+                                             {
+    if (!newFullName.empty() && newFullName != "  ")
+        studentsDataBase->get(index).setFullName(newFullName);
+    if (!newGroupNumber.empty())
+        studentsDataBase->get(index).setGroupNumber(newGroupNumber);
+    if (!newIdCard.empty())
+        studentsDataBase->get(index).setIdCard(newIdCard);
+
+    this->studentsDataBase->saveToFile();
+}
+
+myVector<Student> StudentsDataBaseController::getStudents(std::function<bool(Student)> filter) {
+    myVector<Student> output;
+    auto students = studentsDataBase->getAll(filter);
+    for (int i = 0; i < students.size(); i++)
+        output.push_back(students[i].first);
+    return output;
+}
+
+myVector<Student> StudentsDataBaseController::sort(std::function<bool(Student, Student)> filter)
+{
+    return mydb::StudentsDataBase::sort(studentsDataBase->getAllRaw(), filter);
+}
+
+void StudentsDataBaseController::saveToFile()
+{
+    this->studentsDataBase->saveToFile();
+}
+
+void StudentsDataBaseController::putMark(int index, int mark) {
+    studentsDataBase->get(index).addMark(mark);
+    this->studentsDataBase->saveToFile();
+}
+
+../Source\DataBase\StudentsDataBase.cpp
+﻿#include "../../Headers/DataBase/StudentsDataBase.h"
+#include <iostream>
+
+
+void mydb::StudentsDataBase::add(Student student) {
+    this->insideDataBase.push_back(student);
+}
+
+
+void mydb::StudentsDataBase::del(int index) {
+this->insideDataBase.erase(index);
+}
+
+
+void mydb::StudentsDataBase::edit(int index, Student student) {
+    this->insideDataBase.insert(index, student);
+}
+
+
+Student& mydb::StudentsDataBase::get(int index) {
+    return this->insideDataBase[index];
+}
+
+std::pair<Student, int>* mydb::StudentsDataBase::get(std::function<bool(Student)> filter) {
+    for (int i = 0; i < insideDataBase.size(); ++i)
+        if (filter(insideDataBase[i]))
+            return new std::pair<Student, int>(insideDataBase[i],i);
+    return nullptr;
+}
+
+myVector<std::pair<Student, int>> mydb::StudentsDataBase::getAll(std::function<bool(Student)> filter) {
+    myVector<std::pair<Student, int>> temp;
+    for (int i = 0; i < insideDataBase.size(); ++i)
+        if (filter(insideDataBase[i]))
+            temp.push_back(std::pair<Student, int>(insideDataBase[i],i));
+    return temp;
+}
+
+myVector<Student> mydb::StudentsDataBase::getAllRaw()
+{
+    myVector<Student> temp;
+    for (int i = 0; i < insideDataBase.size(); ++i)
+            temp.push_back(insideDataBase[i]);
+    return temp;
+}
+
+
+void mydb::StudentsDataBase::saveToFile() {
+    std::ofstream out("save.txt");
+    for (int i = 0; i < insideDataBase.size(); ++i)
+            insideDataBase[i].save(out);
+    out.close();
+}
+
+
+void mydb::StudentsDataBase::loadFromFile() {
+    std::ifstream in("save.txt");
+    std::string buff;
+    while (getline(in, buff))
+        add(Student::load(buff));
+    in.close();
+}
+
+myVector<Student> mydb::StudentsDataBase::sort(myVector<Student> students, std::function<bool(Student, Student)> filter)
+{
+    myVector<Student> sorted = students;
+    for (int i = 0; i < sorted.size() - 1; i++) {
+        for (int j = 0; j < sorted.size() - i - 1; j++) {
+            if (filter(sorted[j], sorted[j + 1])) {
+                // если текущий больше следующего, мен¤ем их местами
+                auto temp = sorted[j];
+                sorted[j] = sorted[j + 1];
+                sorted[j + 1] = temp;
+            }
+        }
+    }
+    return sorted;
+}
+
+
+
+mydb::StudentsDataBase::StudentsDataBase() {
+    loadFromFile();
+}
+
+
+../Source\DataBase\DataStruct\myVector.cpp
+
+../Source\Entities\Student.cpp
+#include "../../Headers/Entities/Student.h"
+
+
+const std::string Student::getIdCard() const {
+    return idCard;
+}
+void Student::setIdCard(const std::string &idCard) {
+    this->idCard = idCard;
+}
+const std::string Student::getGroupNumber() const {
+    return groupNumber;
+}
+void Student::setGroupNumber(const std::string &groupNumber) {
+    this->groupNumber = groupNumber;
+}
+const std::string Student::getFullName() const {
+    return fullName;
+}
+void Student::setFullName(const std::string &fullName) {
+    this->fullName = fullName;
+}
+
+void Student::addMark(int mark) {
+    marksSum += mark;
+    marksCount++;
+    averageMark = float(marksSum) / marksCount;
+}
+
+Student::Student(const std::string &idCard,
+                 const std::string &groupNumber,
+                 const std::string &fullName,
+                 float averageMark, float marksSum,
+                 int marksCount) :
+                 idCard(idCard),
+                 groupNumber(groupNumber),
+                 fullName(fullName),
+                 averageMark(averageMark),
+                 marksSum(marksSum),
+                 marksCount(marksCount){}
+
+Student::Student(const Student &other) {
+    this->averageMark = other.averageMark;
+    this->marksCount = other.marksCount;
+    this->marksSum = other.marksSum;
+    this->fullName = other.fullName;
+    this->groupNumber = other.groupNumber;
+    this->idCard = other.idCard;
+}
+
+void Student::operator=(const Student& other)
+{
+    this->averageMark = other.averageMark;
+    this->marksCount = other.marksCount;
+    this->marksSum = other.marksSum;
+    this->fullName = other.fullName;
+    this->groupNumber = other.groupNumber;
+    this->idCard = other.idCard;
+}
+
+Student::Student() {}
+
+const float Student::getAverageMark() const {
+    return this->averageMark;
+}
+
+Student::~Student() {
+    this->idCard.clear();
+    this->fullName.clear();
+    this->groupNumber.clear();
+}
+
+void Student::save(std::ofstream& out) {
+    out << this->fullName << "|"
+        << this->groupNumber << "|"
+        << this->idCard << "|"
+        << getAverageMarkStr() << "|"
+        << marksSum << "|"
+        << marksCount << "\n";
+}
+
+Student Student::load(std::string line) {
+    Student student;
+    std::string averageMark, marksSum, marksCount;
+    myVector<std::string*> fields {&student.fullName, & student.groupNumber, &student.idCard, &averageMark, &marksSum, &marksCount};
+    std::string buff;
+    int i = 0;
+    for(auto ch : line){
+        if(ch == '|'){
+            *fields[i++] = buff;
+            buff.clear();
+        } else buff.push_back(ch);
+    }
+    marksCount = buff;
+
+    student.averageMark = std::stof(averageMark.c_str());
+    student.marksSum = std::stof(marksSum.c_str());
+    student.marksCount = std::atoi(marksCount.c_str());
+    return student;
+}
+
+const std::string Student::getAverageMarkStr() const {
+    std::string markStr = std::to_string(this->averageMark);
+    if(markStr[3] > '4') markStr[2]++;
+    markStr.erase(3, markStr.size());
+    markStr[1] = '.';
+    return markStr;
+}
+
+../Source\UserInterface\StudentsManager.cpp
+#include "../../Headers/UserInterface/StudentsManager.h"
+#include "../../Headers/Utils/Util.h"
+
+StudentsDataBaseController StudentsManager::controller = StudentsDataBaseController();
+
+void StudentsManager::addStudent() {
+    std::string surname =       input("  : ", FORMAT::SURNAME),
+                name =          input("  : ", FORMAT::NAME),
+                patronymic =    input("  : ", FORMAT::PATRONYMIC),
+                groupNumber =   input("  : ", FORMAT::GROUP_NUMBER),
+                idCard =        input("   : ", FORMAT::ID_CARD),
+                AverageMark =   input("   (  \"0\"    ): ", FORMAT::AVERAGE_MARK);
+    if (controller.addStudent(surname + " " + name + " " + patronymic, groupNumber, idCard, AverageMark))
+        std::cout << "  !" << std::endl;
+    else std::cout << "!    !" << std::endl;
+    pause();
+}
+
+void StudentsManager::deleteStudent() {
+    std::string idCard = input("     : ", FORMAT::ID_CARD);
+    if (controller.deleteStudent(idCard)) std::cout << "  !" << std::endl;
+    else std::cout << "!    !" << std::endl;
+    pause();
+}
+
+void StudentsManager::editStudent() {
+    std::string idCard = input("     : ", FORMAT::ID_CARD);
+    auto student = controller.findStdent(idCard);
+    if (!student) {
+        std::cout << "!   !" << std::endl;
+        return;
+    }
+
+    Printer::print(myVector<Student> { student->first});
+    std::cout << "       :" << std::endl;
+    std::string newSurname =       input("  : ", FORMAT::SURNAME),
+            newName =          input("  : ", FORMAT::NAME),
+            newPatronymic =    input("  : ", FORMAT::PATRONYMIC),
+            newGroupNumber =   input("  : ", FORMAT::GROUP_NUMBER),
+            newIdCard =        input("   : ", FORMAT::ID_CARD);
+    controller.editStudent(student->second,  + " " + newName + " " + newPatronymic, newGroupNumber, newIdCard);
+    pause();
+}
+
+void StudentsManager::findStudentByFullname(float similarityCoef) {
+    std::string fullName = input("  : ", FORMAT::NONE);
+    auto students = controller.getStudents([fullName, similarityCoef](Student student) {
+        return Util::getJaccardCoef(student.getFullName(),fullName) >= similarityCoef;
+        });
+    if (students.size() == 0)
+        std::cout << "     " << std::endl;
+    else {
+        std::cout << " :" << std::endl;
+        Printer::print(students);
+    }
+    pause();
+}
+
+void StudentsManager::findStudentByGroupNumber() {
+    std::string groupNumber = input("  : ", FORMAT::GROUP_NUMBER);
+    auto students = controller.getStudents([groupNumber](Student student) {
+        return student.getGroupNumber() == groupNumber;
+    });
+    if (students.size() == 0)
+        std::cout << "     " << std::endl;
+    else {
+        std::cout << " :" << std::endl;
+        Printer::print(students);
+    }
+    pause();
+}
+
+void StudentsManager::findStudentByIdCard_Match() {
+    std::string mark = input("   (     2  5): ", FORMAT::AVERAGE_MARK);
+    if (mark.size() > 1) if (mark[1] == '.') mark[1] = ',';
+    auto students = controller.getStudents([mark](Student student) {
+        return student.getAverageMark() == std::stof(mark.c_str());
+    });
+    if (students.size() == 0)
+        std::cout << "      " << std::endl;
+    else {
+        std::cout << " :" << std::endl;
+        Printer::print(students);
+    }
+    pause();
+}
+
+void StudentsManager::findStudentByIdCard_Between() {
+    std::string first_mark = input("   (     2  5): ", FORMAT::AVERAGE_MARK);
+    std::string second_mark = input("   (     2  5): ", FORMAT::AVERAGE_MARK);
+    if (first_mark.size() > 1) if (first_mark[1] == '.') first_mark[1] = ',';
+    if (second_mark.size() > 1) if (second_mark[1] == '.') second_mark[1] = ',';
+    auto students = controller.getStudents([first_mark, second_mark](Student student) {
+        return student.getAverageMarkStr() >= first_mark && student.getAverageMarkStr() <= second_mark;
+    });
+    if (students.size() == 0)
+        std::cout << "      " << std::endl;
+    else {
+        std::cout << " :" << std::endl;
+        Printer::print(students);
+    }
+    pause();
+}
+
+void StudentsManager::printStudents(SORT flag) {
+    switch (flag) {
+        case SORT::NONE:Printer::print(controller.getStudents()); break;
+        case SORT::FULLNAME:Printer::print(controller.sort([](Student first, Student second) {
+                return first.getFullName() > second.getFullName(); })); break;
+        case SORT::GROUP_NUMBER:Printer::print(controller.sort([](Student first, Student second) {
+                return first.getGroupNumber() > second.getGroupNumber(); })); break;
+        case SORT::ID_CARD:Printer::print(controller.sort([](Student first, Student second) {
+                return first.getIdCard() > second.getIdCard(); })); break;
+        case SORT::AVERAGE_MARK:Printer::print(controller.sort([](Student first, Student second) {
+                return first.getAverageMarkStr() > second.getAverageMarkStr(); })); break;
+    }
+    pause();
+}
+
+void StudentsManager::saveAndExit() {
+    controller.saveToFile();
+    std::cout << " " << std::endl;
+    exit(0);
+}
+
+std::string StudentsManager::input(const std::string& title, FORMAT format) {
+    while (true) {
+        std::string input;
+        std::cout << title;
+        getline(std::cin, input);
+        Validator inputValidator(input);
+        if (inputValidator(format)) return input;
+        std::cout << "Format Error! Repeat the input please!" << std::endl;
+    }
+}
+
+void StudentsManager::pause()
+{
+    std::cout << "    ..." << std::endl;
+    _getch();
+}
+
+void StudentsManager::putMark() {
+    std::string idCard = input("    : ", FORMAT::ID_CARD);
+    auto student = controller.findStdent(idCard);
+    if (!student) {
+        std::cout << "!   !" << std::endl;
+        return;
+    }
+    std::string mark = input("  (   2  5): ", FORMAT::MARK);
+    controller.putMark(student->second, std::atoi(mark.c_str()));
+    pause();
+}
+
+
+
+
+../Source\UserInterface\Menu\Menu.cpp
+#include "../../../Headers/Menu/Menu.h"
+
+Menu::FunctionCase::FunctionCase(const string title, KEY key, function<void()> ExeFunc)
+{
+	this->title = title;
+	this->code = char(key);
+	this->ExeFunc = ExeFunc;
+}
+
+Menu* Menu::FunctionCase::Do() { ExeFunc(); return nullptr; }
+
+Menu::SubMenuCase::SubMenuCase(const string title, KEY key, Menu* SubMenu)
+{
+	this->title = title;
+	this->code = char(key);
+	this->SubMenu = SubMenu;
+}
+
+Menu* Menu::SubMenuCase::Do() { return SubMenu; }
+
+Menu::Menu() {
+	for (int i = 0; i < 256; ++i)
+		this->menu[i] = nullptr;
+}
+
+void Menu::push_case(string title, KEY key, function<void()> ExeFunc) {
+	if (menu[char(key)]) throw DuplicateKey("Duplicate Key!!!", char(key));
+	menu[char(key)] = new FunctionCase(title, key, ExeFunc);
+}
+
+void Menu::push_case(string title, KEY key, Menu* SubMenu) {
+	if (menu[char(key)]) throw DuplicateKey("Duplicate Key!!!", char(key));
+	menu[char(key)] = new SubMenuCase(title, key, SubMenu);
+}
+
+void Menu::start(Menu* menu) {
+	while (true) {
+		system("cls");
+		std::cout << "Esc) BACK/EXIT" << std::endl;
+		for (int i = 0; i < 256; ++i)
+			if (menu->menu[i] && i != 48)
+				std::cout << menu->menu[i]->title << std::endl;
+		if (menu->menu[48])
+			std::cout << menu->menu[48]->title << std::endl;
+		char choice = _getch();
+		std::cout << std::endl;
+		if (choice == char(KEY::Esc))
+			break;
+		if (!menu->menu[choice]) {
+			std::cout << "Unknown key!!! Press something for continue...";
+			_getch();
+		}
+		else {
+			auto SubMenu = menu->menu[choice]->Do();
+			if (SubMenu) start(SubMenu);
+		}
+	}
+}
+
+../Source\UserInterface\Printer\Printer.cpp
+#include "../../../Headers/UserInterface/Printer.h"
+
+std::string Printer::getLine(int size, char type) {
+    std::string line;
+    for (int i = 0; i < size; ++i)
+        line += type;
+    return line;
+}
+
+void Printer::printTitle(std::ostream *out) {
+    *out << " " << getLine(89, '-') << std::endl;
+    *out << "|  " << getLine(30, ' ')
+         << "|   "
+         << "|  "
+         << "|   |" << std::endl;
+    *out << " " << getLine(89, '-') << std::endl;
+}
+
+void Printer::print(Student student, std::ostream *out) {
+    *out << "| " << student.getFullName() << getLine(std::abs(int(42 - student.getFullName().size())), ' ')
+         << "| " << student.getIdCard() << getLine(20 - 9, ' ')
+         << "| " << student.getGroupNumber() << getLine(std::abs(int(7 - student.getGroupNumber().size())), ' ')
+         << "| " << student.getAverageMarkStr() << getLine(std::abs(int(13 - student.getAverageMarkStr().size())), ' ')
+         << "|" << std::endl;
+    *out << " " << getLine(89, '-') << std::endl;
+}
+
+void Printer::print(myVector<Student> students, std::ostream *out) {
+    printTitle();
+    for (int i = 0; i < students.size(); ++i)
+        print(students[i]);
+
+}
+
+../Source\UserInterface\Validators\Validator.cpp
+#include "../../../Headers/UserInterface/Validator.h"
+
+Validator::Validator(std::string source) {
+    this->value = source;
+}
+
+bool Validator::operator()(FORMAT index) {
+    return (std::regex_match(this->value, std::regex(formats[index])));
+}
+
+
+../Source\Utils\Util.cpp
+#include "../../Headers/Utils/Util.h"
+
+
+float Util::getJaccardCoef(std::string first, std::string second) {
+    size_t size1 = first.size();
+    size_t size2 = second.size();
+
+    //   
+    size_t intersection = 0;
+    for (size_t i = 0; i < size1; ++i) {
+        for (size_t j = 0; j < size2; ++j) {
+            if (first[i] == second[j]) {
+                intersection++;
+                //  
+                second[j] = '\0'; //      
+                break;
+            }
+        }
+    }
+
+    //   
+    float jaccardCoefficient = static_cast<float>(intersection) / (size1 + size2 - intersection);
+    return jaccardCoefficient;
+}
+
