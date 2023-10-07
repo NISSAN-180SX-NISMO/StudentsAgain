@@ -19,6 +19,5 @@ float Util::getJaccardCoef(std::string first, std::string second) {
     }
 
     // Вычисление коэффициента Жаккарда
-    float jaccardCoefficient = float(intersection) / (size1 + size2 - intersection);
-    return jaccardCoefficient;
+    return float(intersection) / (size1 + size2 - intersection);
 }
