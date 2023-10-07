@@ -2,13 +2,13 @@
 
 
 float Util::getJaccardCoef(std::string first, std::string second) {
-    size_t size1 = first.size();
-    size_t size2 = second.size();
+    int size1 = first.size();
+    int size2 = second.size();
 
     // Вычисление размера пересечения
-    size_t intersection = 0;
-    for (size_t i = 0; i < size1; ++i) {
-        for (size_t j = 0; j < size2; ++j) {
+    int intersection = 0;
+    for (int i = 0; i < size1; ++i) {
+        for (int j = 0; j < size2; ++j) {
             if (first[i] == second[j]) {
                 intersection++;
                 // Исключаем дубликаты
@@ -19,6 +19,6 @@ float Util::getJaccardCoef(std::string first, std::string second) {
     }
 
     // Вычисление коэффициента Жаккарда
-    float jaccardCoefficient = static_cast<float>(intersection) / (size1 + size2 - intersection);
+    float jaccardCoefficient = float(intersection) / (size1 + size2 - intersection);
     return jaccardCoefficient;
 }
