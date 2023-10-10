@@ -34,7 +34,7 @@ add_executable(StudentManager Source/main.cpp
 
 class StudentsDataBaseController {
 private:
-    mydb::DataBaseAdapter<Student>* studentsDataBase = new mydb::StudentsDataBase;
+    static mydb::DataBaseAdapter<Student>* studentsDataBase;
 public:
     StudentsDataBaseController() = default;
     bool addStudent(const std::string& fullName, const std::string& groupName, const std::string& idCard, const std::string& averageMark);
@@ -454,6 +454,8 @@ int main() {
 ../Source\Controllers\StudentsDataBaseController.cpp
 #include "../../Headers/Controllers/StudentsDataBaseController.h"
 
+mydb::DataBaseAdapter<Student>* StudentsDataBaseController::studentsDataBase = new mydb::StudentsDataBase;
+
 bool StudentsDataBaseController::addStudent(const std::string& fullName, const std::string& groupNumber,
                                             const std::string& idCard,  const std::string& averageMark) {
     if (studentsDataBase->get([idCard](const Student& student) {
@@ -607,8 +609,6 @@ mydb::StudentsDataBase::StudentsDataBase() {
     loadFromFile();
 }
 
-
-../Source\DataBase\DataStruct\myVector.cpp
 
 ../Source\Entities\Student.cpp
 #include "../../Headers/Entities/Student.h"
@@ -989,13 +989,13 @@ bool Validator::operator()(FORMAT index) {
 
 
 float Util::getJaccardCoef(std::string first, std::string second) {
-    size_t size1 = first.size();
-    size_t size2 = second.size();
+    int size1 = first.size();
+    int size2 = second.size();
 
     //   
-    size_t intersection = 0;
-    for (size_t i = 0; i < size1; ++i) {
-        for (size_t j = 0; j < size2; ++j) {
+    int intersection = 0;
+    for (int i = 0; i < size1; ++i) {
+        for (int j = 0; j < size2; ++j) {
             if (first[i] == second[j]) {
                 intersection++;
                 //  
@@ -1006,7 +1006,6 @@ float Util::getJaccardCoef(std::string first, std::string second) {
     }
 
     //   
-    float jaccardCoefficient = static_cast<float>(intersection) / (size1 + size2 - intersection);
-    return jaccardCoefficient;
+    return float(intersection) / (size1 + size2 - intersection);
 }
 

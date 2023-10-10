@@ -27,7 +27,6 @@ def list_files_in_directory(directory):
 
 
 def main():
-    print("danya loh")
     # Укажите путь к директории проекта, который вы хотите просканировать
     project_directory = "../"
 

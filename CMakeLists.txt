@@ -11,7 +11,6 @@ add_executable(StudentManager Source/main.cpp
         Headers/DataBase/StudentsDataBase.h
         Source/UserInterface/Validators/Validator.cpp
         Headers/UserInterface/Validator.h
-        Source/DataBase/DataStruct/myVector.cpp
         Headers/DataBase/myVector.h
         Source/UserInterface/Printer/Printer.cpp
         Headers/UserInterface/Printer.h
